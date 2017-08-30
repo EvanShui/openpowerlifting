@@ -16,6 +16,7 @@ var selWeightType = document.getElementById("weighttype");
 var selClass = document.getElementById("weightclass");
 var selFed = document.getElementById("fedselect");
 var selYear = document.getElementById("yearselect");
+var selAge = document.getElementById("ageselect");
 var searchfield = document.getElementById("searchfield");
 var searchbutton = document.getElementById("searchbutton");
 
@@ -62,6 +63,10 @@ function getIndices() {
     var selectonyear = (selYear.value !== "all");
     var year = selYear.value;
 
+    var selectonage = (selAge.value !== "all");
+    var selected_age = selAge.value;
+    console.log(selected_age);
+
     function filter(row) {
         if (!men && !women)
             return false;
@@ -74,6 +79,42 @@ function getIndices() {
             var bw = row[opldb.BODYWEIGHTKG];
             if (bw === undefined || bw <= bw_min || bw > bw_max)
                 return false;
+        }
+
+        if(selectonage) {
+            // Check if the selected division matches this row
+            if(selected_age != row[opldb.DIVISION]) {
+                var age = row[opldb.AGE];
+
+                // If not, check if the lifter's age falls into the selected division's interval
+                switch(selected_age) {
+                    // IPF age divisions
+                    case "Sub-Juniors":
+                        if(!(age >= 14 && age <=18))
+                            return false;
+                        break;
+                    case "Juniors":
+                        if(!(age >= 19 && age <=23))
+                            return false;
+                        break;
+                    case "Master 1":
+                        if(!(age >= 40 && age <= 49))
+                            return false;
+                        break;
+                    case "Master 2":
+                        if(!(age >= 50 && age <=59))
+                            return false;
+                        break;
+                    case "Master 3":
+                        if(!(age >= 60 && age <= 69))
+                            return false;
+                        break;
+                    case "Master 4":
+                        if(!(age >= 70))
+                            return false;
+                        break;
+                }
+            }
         }
 
         if (selectonfed || selectonyear) {
@@ -224,6 +265,7 @@ function addEventListeners() {
     addSelectorListeners(selClass);
     addSelectorListeners(selFed);
     addSelectorListeners(selYear);
+    addSelectorListeners(selAge);
 
     searchfield.addEventListener("keypress", searchOnEnter, false);
     searchbutton.addEventListener("click", search, false);
