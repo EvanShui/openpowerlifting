@@ -21,9 +21,8 @@ if datetime.datetime.now().strftime("%Y") != "2017":
     print("Warning: RAW fetch URL needs updating for new year.", file=sys.stderr)
 
 FEDDIR = os.path.dirname(os.path.realpath(__file__))
-YEAR = datetime.datetime.now().strftime("%Y")
-URL = "http://rawpowerlifting.com/"+YEAR+"_results/"
-BASEURL = "http://rawpowerlifting.com/"+YEAR+"_results/"
+URL = "http://rawpowerlifting.com/2017_results/"
+BASEURL = "http://rawpowerlifting.com/2017_results/"
 
 
 def color(s):
