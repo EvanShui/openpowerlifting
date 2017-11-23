@@ -1,12 +1,12 @@
 .PHONY: builddir csvfile check probe
 
-DATADIR = meet-data
-BUILDDIR = build
+DATADIR := meet-data
+BUILDDIR := build
 
-PLFILE = openpowerlifting.csv
-PLFILEJS = openpowerlifting.js
-MEETFILE = meets.csv
-MEETFILEJS = meets.js
+PLFILE := openpowerlifting.csv
+PLFILEJS := openpowerlifting.js
+MEETFILE := meets.csv
+MEETFILEJS := meets.js
 
 all: csvfile sqlite web
 
@@ -20,6 +20,7 @@ csvfile: builddir
 	scripts/csv-wilks "${BUILDDIR}/${PLFILE}"
 
 sqlite: csvfile
+	scripts/prepare-for-sqlite
 	scripts/compile-sqlite
 
 web: csvfile
@@ -37,21 +38,25 @@ check:
 # or at least are quick to read and not filled with noise.
 # Data showing up here should be immediately actionable.
 probe-quick:
-	${DATADIR}/365strong/365strong-probe || true
 	${DATADIR}/aau/aau-probe --quick || true
+	${DATADIR}/apa/apa-probe || true
+	${DATADIR}/apc/apc-probe --quick || true
 	${DATADIR}/apf/apf-probe --quick || true
 	${DATADIR}/bb/bb-probe || true
 	${DATADIR}/capo/capo-probe --quick || true
 	${DATADIR}/commonwealthpf/commonwealthpf-probe || true
 	${DATADIR}/cpf/cpf-probe --quick || true
+	${DATADIR}/cpl/cpl-probe --quick || true
 	${DATADIR}/gbpf/gbpf-probe --quick || true
-	${DATADIR}/hercules/hercules-probe || true
-	${DATADIR}/ipa/ipa-probe || true
+	${DATADIR}/herc/herc-probe || true
+	${DATADIR}/ipa/ipa-probe --quick || true
 	${DATADIR}/irishpf/irishpf-probe || true
+	${DATADIR}/nasa/nasa-probe --quick || true
 	${DATADIR}/nipf/nipf-probe || true
-	${DATADIR}/pa/pa-probe || true
+	${DATADIR}/pa/pa-probe --quick || true
 	${DATADIR}/rps/rps-probe || true
 	${DATADIR}/rupc/rupc-probe || true
+	${DATADIR}/scottishpl/scottishpl-probe --quick || true
 	${DATADIR}/spf/spf-probe || true
 	${DATADIR}/spf-archive/spf-archive-probe || true
 	${DATADIR}/upa/upa-probe || true
@@ -62,19 +67,20 @@ probe-quick:
 
 # List of all probes.
 probe:
-	${DATADIR}/365strong/365strong-probe || true
 	${DATADIR}/aau/aau-probe || true
 	${DATADIR}/apa/apa-probe || true
+	${DATADIR}/apc/apc-probe || true
 	${DATADIR}/apf/apf-probe || true
 	${DATADIR}/bb/bb-probe || true
 	${DATADIR}/capo/capo-probe || true
 	${DATADIR}/commonwealthpf/commonwealthpf-probe || true
 	${DATADIR}/cpf/cpf-probe || true
+	${DATADIR}/cpl/cpl-probe || true
 	${DATADIR}/epf/epf-probe || true
 	${DATADIR}/fesupo/fesupo-probe || true
 	${DATADIR}/fpo/fpo-probe || true
 	${DATADIR}/gbpf/gbpf-probe || true
-	${DATADIR}/hercules/hercules-probe || true
+	${DATADIR}/herc/herc-probe || true
 	${DATADIR}/ipa/ipa-probe || true
 	${DATADIR}/ipf/ipf-probe || true
 	${DATADIR}/irishpf/irishpf-probe || true
@@ -86,6 +92,7 @@ probe:
 	${DATADIR}/raw/raw-probe || true
 	${DATADIR}/rps/rps-probe || true
 	${DATADIR}/rupc/rupc-probe || true
+	${DATADIR}/scottishpl/scottishpl-probe || true
 	${DATADIR}/spf/spf-probe || true
 	${DATADIR}/spf-archive/spf-archive-probe || true
 	${DATADIR}/thspa/thspa-probe || true
@@ -102,6 +109,7 @@ clean:
 	rm -rf 'tests/__pycache__'
 	rm -rf '${DATADIR}/apf/__pycache__'
 	rm -rf '${DATADIR}/cpu/__pycache__'
+	rm -rf '${DATADIR}/ipf/__pycache__'
 	rm -rf '${DATADIR}/nasa/__pycache__'
 	rm -rf '${DATADIR}/nipf/__pycache__'
 	rm -rf '${DATADIR}/nsf/__pycache__'
@@ -110,5 +118,6 @@ clean:
 	rm -rf '${DATADIR}/spf/__pycache__'
 	rm -rf '${DATADIR}/thspa/__pycache__'
 	rm -rf '${DATADIR}/usapl/__pycache__'
-	rm -rf '${DATADIR}/ipf/__pycache__'
+	rm -rf '${DATADIR}/wrpf/__pycache__'
+	rm -rf 'server/target'
 	$(MAKE) -C web clean

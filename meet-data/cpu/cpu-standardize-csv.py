@@ -251,11 +251,20 @@ def standardize_location(csv):
         elif loc == 'Alberta':
             row[stateidx] = 'AB'
         else:
+            # Fix a particular erroneous row.
+            if row[csv.index('MeetName')] == 'Mike Laroche Memorial Open':
+                row[csv.index('MeetName')] = 'Mike LaRoche Memorial Open'
+                loc = 'Halifax; NS'
+
             assert ';' in loc
 
             # If there are more than two ';', it looks like:
             # "Killeen; Texas; USA". So just grab the first 2.
             town,state = loc.split(';')[0:2]
+
+            # Sometimes 'QU' is harde-coded.
+            if state.strip() == 'QU':
+                state = 'QC'
 
             row[stateidx] = state.strip()
             row[townidx] = town.strip()

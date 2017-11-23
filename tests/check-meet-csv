@@ -54,6 +54,7 @@ KnownFederations = {
     "AAPF", # Amateur APF (drug-tested).
     "AAU", # Amateur Athletic Union.
     "APA",
+    "APC", # American Powerlifting Committee.
     "APF",
     "AsianPF", # Asian Powerlifting Federation, IPF.
     "BB", # Bogatyr Brotherhood, a stand-alone and short-lived Russian federation.
@@ -66,11 +67,12 @@ KnownFederations = {
     "CPL", # Canadian Powerlifting League.
     "CPU", # Canadian Powerlifting Union.
     "FESUPO", # Federacion Sudamericana de Powerlifting
+    "FFForce", # Federation Francaise de Force, IPF.
     "FPO", # Finland Powerlifting Organization (IPA).
     "GBPF", # British Powerlifting.
     "GPA",
     "GPC",
-    "Hercules", # Hercules Gym in Syracuse, NY. Run by Rheta West.
+    "HERC", # Hercules Gym in Syracuse, NY. Run by Rheta West.
     "IPA",
     "IPF",
     "IPL",
@@ -78,6 +80,7 @@ KnownFederations = {
     "NAPF", # North American Powerlifting Federation.
     "NASA",
     "NIPF", # Northern Ireland Powerlifting Federation.
+    "NPA", # National Powerlifting Association of Israel.
     "NSF", # Norwegian branch of the IPF.
     "NZPF", # New Zealand Powerlifting Federation, IPF.
     "OceaniaPF", # Oceania Powerlifting Federation, IPF.
@@ -88,11 +91,13 @@ KnownFederations = {
     "ProRaw",
     "PA",
     "RAW", # 100% RAW Federation (drug-tested).
+    "ScottishPL", # Scottish Powerlifting, IPF.
     "SCT", # Super-Cup of Titans.
     "THSPA", # Texas High School, single-ply only, drug-tested.
     "UPA",
     "WPC",
     "AWPC", # Amateur WPC (drug-tested).
+    "WNPF", # World Natural Powerlifting Federation.
     "WRPF",
     "WUAP", # World United Amateur Powerlifting.
     "XPC",
@@ -111,11 +116,13 @@ KnownCountries = {
     "England",
     "Estonia",
     "Finland",
+    "France",
     "Germany",
     "Greece",
     "India",
     "Indonesia",
     "Ireland",
+    "Israel",
     "Italy",
     "Japan",
     "Kazakhstan",
@@ -181,19 +188,22 @@ def check(scriptname, filename):
     reset_filename_state(filename)
 
     csv = oplcsv.Csv(filename)
+    if len(csv.rows) != 1:
+        perror("Incorrect number of rows.")
 
     # Require fields to be present and in a set order.
     fields = ['Federation', 'Date', 'MeetCountry', 'MeetState', 'MeetTown', 'MeetName']
     if len(fields) != len(csv.fieldnames):
-        perror("Incorrect number of fields")
+        perror("Incorrect number of fields.")
 
     for i in range(0, len(fields)):
         if fields[i] != csv.fieldnames[i]:
-            perror("Field %u must be %s" % (i, fields[i]))
+            perror("Field %u must be %s." % (i, fields[i]))
 
     row = csv.rows[0]
     if len(row) != len(fields):
-        perror("Meet file has incorrect number of columns")
+        perror("Meet file has incorrect number of columns.")
+        return # Exit early -- this error is bad enough.
 
     fedidx = csv.index('Federation')
     dateidx = csv.index('Date')
