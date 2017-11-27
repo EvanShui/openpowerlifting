@@ -22,24 +22,27 @@ def write_without_fieldnames(csv, path):
             fd.write(','.join(row) + "\n")
 
 
-def handle_openpowerlifting():
+def handle_entries():
     csv = Csv('build/openpowerlifting.csv')
 
     csv.insert_column(0, 'rowid')
+    sexidx = csv.index('Sex')
+    eqpidx = csv.index('Equipment')
+
     for i, row in enumerate(csv.rows):
         row[0] = str(i)
 
-    # Convert the Sex column to boolean: M => 0, F => 1.
-    sexidx = csv.index('Sex')
-    for row in csv.rows:
+        # Convert the Sex column to boolean: M => 0, F => 1.
         row[sexidx] = str(['M','F'].index(row[sexidx]))
 
-    # Convert the Equipment column to integer.
-    eqpidx = csv.index('Equipment')
-    for row in csv.rows:
+        # Convert the Equipment column to integer.
         row[eqpidx] = str(['Raw','Wraps','Single-ply','Multi-ply','Straps'].index(row[eqpidx]))
 
-    write_without_fieldnames(csv, 'build/sqlite-openpowerlifting.csv')
+    # The Web version keeps the Name column and deletes LifterID.
+    # The Server version keeps the LifterID column and deletes Name.
+    csv.remove_column_by_name('Name')
+
+    write_without_fieldnames(csv, 'build/sqlite-entries.csv')
 
 
 def handle_meets():
@@ -47,20 +50,15 @@ def handle_meets():
     write_without_fieldnames(csv, 'build/sqlite-meets.csv')
 
 
-def handle_social_media():
-    csv = Csv('lifter-data/social-media.csv')
-
-    csv.insert_column(0, 'rowid')
-    for i, row in enumerate(csv.rows):
-        row[0] = str(i)
-
-    write_without_fieldnames(csv, 'build/sqlite-social-media.csv')
+def handle_lifters():
+    csv = Csv('build/lifters.csv')
+    write_without_fieldnames(csv, 'build/sqlite-lifters.csv')
 
 
 def main():
-    handle_openpowerlifting()
+    handle_entries()
     handle_meets()
-    handle_social_media()
+    handle_lifters()
 
 
 if __name__ == '__main__':
