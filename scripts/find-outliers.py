@@ -24,8 +24,9 @@ norm_dict = {}
 
 labels = []
 
-NUM_CLUSTERS = 2
-REPEATS = 1
+NUM_CLUSTERS = 3
+REPEATS = 10
+OUTLIER_ZS = 3
 
 def find_max(db):
     ret_dict = {}
@@ -47,7 +48,7 @@ def serializeStr(astr):
         total += ord(c) * multiplier
         multiplier *= 256
 
-    return total
+    return total % 9223372036854775807
 
 def get_data(path):
     db = pd.read_csv(path)
@@ -70,6 +71,23 @@ def get_data(path):
     db.drop("Bench2Kg", 1, inplace=True)
     db.drop("Bench3Kg", 1, inplace=True)
     db.drop("Bench4Kg", 1, inplace=True)
+    db.drop("WeightClassKg", 1, inplace=True)
+
+    global labels
+    labels = db.columns
+
+    for i in range(len(db.columns)):
+        indexes[db.columns[i]] = i
+    print(indexes)
+
+    # Serialize all strings in database
+    for j in range(len(db)):
+        #db.set_value(j, "Month", serializeStr(db["Month"][j]))
+        db.set_value(j, "Name", serializeStr(db["Name"][i]))
+        db.set_value(j, "Sex", serializeStr(db["Sex"][i]))
+        db.set_value(j, "Event", serializeStr(db["Event"][i]))
+        db.set_value(j, "Equipment", serializeStr(db["Equipment"][i]))
+        db.set_value(j, "Division", serializeStr(db["Division"][i]))
 
     index_remove = []
     for col in (range(len(db))):
@@ -82,21 +100,7 @@ def get_data(path):
     indexes_to_keep = set(range(db.shape[0])) - set(index_remove)
     db = db.take(list(indexes_to_keep))
 
-    global labels
-    labels = db.columns
-
-    for i in range(len(db.columns)):
-        indexes[db.columns[i]] = i
-    print(indexes)
-
-    # Serialize all strings in database
-    for j in range(len(db)):
-        #db.set_value(j, "Month", serializeStr(db["Month"][j]))
-        db.set_value("Name", i, serializeStr(db["Name"][i]))
-        db.set_value("Sex", i, serializeStr(db["Sex"][i]))
-        db.set_value("Event", i, serializeStr(db["Event"][i]))
-        db.set_value("Equipment", i, serializeStr(db["Equipment"][i]))
-        db.set_value("Division", i, serializeStr(db["Division"][i]))
+    db = db.sample(frac=1)
 
     asarr = [array(f) for f in db.as_matrix()]
     return asarr
@@ -104,9 +108,12 @@ def get_data(path):
 def svariate_outlier(cluster):
     global labels
     db = pd.DataFrame(data=cluster, columns=labels)
-    means = []
+    means = {}
+    stdevs = {}
+
     for key in indexes.keys():
-        means.append(statistics.mean(f for f in db[key]))
+        means[key] = statistics.mean(list(f for f in db[key]))
+        stdevs[key] = statistics.pstdev(list(f for f in db[key]))
 
     print(means)
         #total = 0
@@ -114,8 +121,11 @@ def svariate_outlier(cluster):
         #    total += cluster[j][value]
         #means.append(total / len(cluster))
 
-    for i in range(len(cluster)):
-        pass
+    for key in indexes.keys():
+        for j in range(len(db)):
+            zscore = abs((db[key][j] - means[key]) / stdevs[key])
+            if(zscore > OUTLIER_ZS):
+                print(db.iloc[[j]])
 
 
 def euclid_component(a, b, normalization):
@@ -136,11 +146,6 @@ def distance_func(u, v):
     else:
         sex = 0
 
-    if u[indexes["Event"]] == v[indexes["Event"]]:
-        event = 1
-    else:
-        event = 0
-
     if u[indexes["Equipment"]] == v[indexes["Equipment"]]:
         equip = 1
     else:
@@ -153,7 +158,7 @@ def distance_func(u, v):
 
     distance = math.sqrt(
         # categorical variables
-        sex + event + equip + division +
+        sex + equip + division +
         # continuous variables
         euclid_component(u[indexes["Age"]], v[indexes["Age"]], norm_dict["Age"]) +
         euclid_component(u[indexes["BodyweightKg"]], v[indexes["BodyweightKg"]], norm_dict["BodyweightKg"]) +
@@ -162,12 +167,13 @@ def distance_func(u, v):
         euclid_component(u[indexes["BestDeadliftKg"]], v[indexes["BestDeadliftKg"]], norm_dict["BestDeadliftKg"])
     )
 
+    print(distance)
     return distance
 
 if __name__ == '__main__':
     import sys
 
-    kclusterer = KMeansClusterer(NUM_CLUSTERS, distance=distance_func, repeats=REPEATS, avoid_empty_clusters=True)
+    kclusterer = KMeansClusterer(NUM_CLUSTERS, distance=euclidean_distance, repeats=REPEATS, avoid_empty_clusters=True)
     data = get_data(sys.argv[1])
 
     print(data)
@@ -181,10 +187,8 @@ if __name__ == '__main__':
     for i in range(len(assigned_clusters)):
         clusters[assigned_clusters[i]].append(data[i])
 
-    print("yo")
-
     #print(clusters[0])
     #print(clusters[1])
 
-    #for cluster in clusters:
-        #svariate_outlier(cluster)
+    for cluster in clusters:
+        svariate_outlier(cluster)
