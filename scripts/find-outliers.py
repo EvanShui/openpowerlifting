@@ -24,7 +24,7 @@ norm_dict = {}
 
 labels = []
 
-NUM_CLUSTERS = 3
+NUM_CLUSTERS = 5
 REPEATS = 10
 OUTLIER_ZS = 3
 
@@ -142,19 +142,19 @@ def euclid_component(a, b, normalization):
 def distance_func(u, v):
 
     if u[indexes["Sex"]] == v[indexes["Sex"]]:
-        sex = 1
-    else:
         sex = 0
+    else:
+        sex = 1
 
     if u[indexes["Equipment"]] == v[indexes["Equipment"]]:
-        equip = 1
-    else:
         equip = 0
+    else:
+        equip = 1
 
     if u[indexes["Division"]] == v[indexes["Division"]]:
-        division = 1
-    else:
         division = 0
+    else:
+        division = 1
 
     distance = math.sqrt(
         # categorical variables
